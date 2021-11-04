@@ -7,24 +7,32 @@
 #ifndef TASK_TASK_H_
 #define TASK_TASK_H_
 
-#include <iostream>
-#include "callback/callback.h"
+#include <stddef.h>
+#include <functional>
 
 namespace runner {
 
-class Task {
- public:
-  Task() = default;
-  Task(Callback task, uint64_t delay)
-    : task_(task), delay_(delay) {
+struct Task {
+  Task(std::function<void()> task, uint64_t delay)
+    : delay(delay), task(task) {}
 
-  }
-
- private:
-  uint64_t delay_;
-  Callback task_;
-
+  uint64_t delay;
+  std::function<void()> task;
 };
+
+// class Task {
+//  public:
+//   Task() = default;
+//   Task(Callback task, uint64_t delay)
+//     : task_(task), delay_(delay) {
+
+//   }
+
+//  private:
+//   uint64_t delay_;
+//   Callback task_;
+
+// };
 
 }  // namespace runner
 
