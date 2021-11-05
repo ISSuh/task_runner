@@ -7,7 +7,7 @@
 #ifndef TASK_TASK_RUNNER_H_
 #define TASK_TASK_RUNNER_H_
 
-#include <funcional>
+#include <functional>
 
 #include "thread/worker_thread.h"
 
@@ -19,7 +19,7 @@ class TaskRunner : WorkerThread::Delegate  {
     PostDelayTask(task, 0);
   }
 
-  virtual void PostDelayTask(std::function<void()> task, u_int64_t delay) = 0;
+  virtual void PostDelayTask(std::function<void()> task, uint64_t delay) = 0;
 
  protected:
   TaskRunner() = default;

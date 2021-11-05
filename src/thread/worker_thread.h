@@ -18,12 +18,14 @@ class WorkerThread {
    public:
     virtual void OnStartWork() = 0;
     virtual void OnDidFinishWork() = 0;
+
+    virtual void WakeUp() = 0;
   };
 
   virtual void Work() = 0;
 
   void Start() {
-    worker_.reset(new std::thread(ExcuteWork));
+    worker_.reset(new std::thread(ExcuteWork, this, delegate_));
   }
 
   void Join() {
@@ -38,10 +40,10 @@ class WorkerThread {
   virtual ~WorkerThread() = default;
 
  private:
-  void ExcuteWork() {
-    delegate_->OnStartWork();
-    Work();
-    delegate_->OnDidFinishWork();
+  static void ExcuteWork(WorkerThread* worker_, Delegate* delegae) {
+    delegae->OnStartWork();
+    worker_->Work();
+    delegae->OnDidFinishWork();
   }
 
   std::unique_ptr<std::thread> worker_;
