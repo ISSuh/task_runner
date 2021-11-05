@@ -20,20 +20,6 @@ struct Task {
   std::function<void()> task;
 };
 
-// class Task {
-//  public:
-//   Task() = default;
-//   Task(Callback task, uint64_t delay)
-//     : task_(task), delay_(delay) {
-
-//   }
-
-//  private:
-//   uint64_t delay_;
-//   Callback task_;
-
-// };
-
 }  // namespace runner
 
 #endif  // TASK_TASK_H_

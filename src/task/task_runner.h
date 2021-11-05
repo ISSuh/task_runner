@@ -7,12 +7,13 @@
 #ifndef TASK_TASK_RUNNER_H_
 #define TASK_TASK_RUNNER_H_
 
-#include <stddef.h>
 #include <funcional>
+
+#include "thread/worker_thread.h"
 
 namespace runner {
 
-class TaskRunner {
+class TaskRunner : WorkerThread::Delegate  {
  public:
   virtual void PostTask(std::function<void()> task) {
     PostDelayTask(task, 0);

@@ -8,7 +8,6 @@
 #define THREAD_WORKER_THREAD_POOL_H_
 
 #include <iostream>
-#include <thread>
 #include <vector>
 
 #include "thread/worker_thread.h"
@@ -22,8 +21,15 @@ class WorkerThreadPool {
 
   ~WorkerThreadPool() {}
 
+  void 
+
+  void Join() {
+
+  }
+
  private:
   size_t thread_num_;
+  std::vector<WorkerThread> pool_;
   
 };
 
