@@ -53,8 +53,3 @@
 
 //   runner.WiatForFinish();
 // }
-
-int main() {
-  std::cout << "Hello World!\n";
-
-}
