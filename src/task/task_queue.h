@@ -19,7 +19,7 @@ class TaskQueue {
 
   void push(const Task& task) { queue_.push(task); }
 
-  Task front() { queue_.front(); }
+  Task front() { return queue_.front(); }
   void pop() { queue_.pop(); }
 
   bool empty() { return queue_.empty(); }

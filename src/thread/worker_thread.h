@@ -10,6 +10,8 @@
 #include <thread>
 #include <memory>
 
+#include "task/task.h"
+
 namespace runner {
 
 class WorkerThread {
@@ -30,30 +32,19 @@ class WorkerThread {
 
   virtual void Work() = 0;
 
-  void Start() {
-    worker_.reset(new std::thread(ExcuteWork, this, delegate_));
-  }
-
-  void Join() {
-    if (worker_->joinable()) {
-      worker_->join();
-    }
-  }
+  uint64_t GetWokerId() const;  
+  void Join();
 
  protected:
-  WorkerThread(Delegate* delegate)
-    : delegate_(delegate) {}
-  virtual ~WorkerThread() = default;
+  WorkerThread(Delegate* delegate);
+  virtual ~WorkerThread();
 
   Delegate* delegate_;
 
  private:
-  static void ExcuteWork(WorkerThread* worker_, Delegate* delegate) {
-    delegate->OnStartThread();
-    worker_->Work();
-    delegate->OnFinishThread();
-  }
+  static void ExcuteWork(WorkerThread* worker_, Delegate* delegate);
 
+  uint64_t id_;
   std::unique_ptr<std::thread> worker_;
 };
 

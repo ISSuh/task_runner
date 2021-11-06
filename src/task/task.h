@@ -13,6 +13,7 @@
 namespace runner {
 
 struct Task {
+  Task() {}
   Task(std::function<void()> task, uint64_t delay)
     : delay(delay), task(task) {}
 

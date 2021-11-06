@@ -7,67 +7,44 @@
 #ifndef TASK_SEQUENCED_TASK_RUNNER_H_
 #define TASK_SEQUENCED_TASK_RUNNER_H_
 
+#include <vector>
 #include <mutex>
 #include <memory>
 
 #include "task/task_runner.h"
 #include "task/task_executor.h"
+#include "task/task_queue.h"
 
 namespace runner {
 
-class SequencedTaskRunner : public TaskRunner {
+class TaskExecutor;
+class TaskQueue;
+
+class SequencedTaskRunner final : public TaskRunner {
  public:
-  SequencedTaskRunner()
-    : executor_(nullptr),
-      running_(false) {
-    }
+  SequencedTaskRunner();
+  virtual ~SequencedTaskRunner();
 
-  virtual ~SequencedTaskRunner() {
-    running_ = false;
-    cv_.notify_all();
-  }
+  // TaksRunner
+  void PostDelayTask(std::function<void()>, uint64_t delay) override;
+  bool CheckTerminatedAllWorkers() override;
+  void StopRunner() override;
+  std::vector<uint64_t> WorkerIdLists() override;
 
-  void PostDelayTask(std::function<void()>, uint64_t delay) override {
-    
-    cv_.notify_all();
-  }
+  // WokerThread::Delegate
+  void OnStartThread() override;
+  void OnFinishThread() override;
+  void OnStartTask() override;
+  void OnDidFinishTask() override;
 
-  void OnStartThread() override {
+  bool CanRunning() override;
 
-  }
-
-  void OnFinishThread() override {
-    
-  }
-
-  void OnStartTask() override {
-
-  }
-
-  void OnDidFinishTask() override {
-    
-  }
-
-  bool CanRunning() override {
-    return running_;
-  }
-
-  bool CanWakeUp() override {
-    std::unique_lock<std::mutex> lock(mutex_);
-
-    cv_.wait(lock, [&](){
-        return running_;
-    });
-
-    lock.unlock();
-
-    return true;
-  }
-
+  Task NextTask() override;
+  bool CanWakeUp() override;
+  
  private:
   std::unique_ptr<TaskExecutor> executor_;
-  std::unique_ptr<TaskDispatcher> dispatcher_;
-  
+  TaskQueue queue_;
   bool running_;
   
   std::condition_variable cv_;

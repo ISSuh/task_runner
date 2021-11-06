@@ -9,11 +9,15 @@
 
 #include "task/task_manager.h"
 #include "task/task_dispatcher.h"
+
 namespace runner {
 
 class Runner {
  public:
+  Runner() {}
+  ~Runner() {}
   
+
  private:
 
 };
