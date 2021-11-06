@@ -16,21 +16,38 @@ namespace runner {
 
 class WorkerThreadPool {
  public:
-  WorkerThreadPool(size_t thread_num = 1)
-    : thread_num_(thread_num_) {}
+  WorkerThreadPool(std::vector<WorkerThread*> threads)
+    : num_of_workers_(threads.size()),
+      running_(false),
+      pool_(threads) {}
 
-  ~WorkerThreadPool() {}
+  ~WorkerThreadPool() {
+    Join();
+  }
 
-  void 
+  void Start() {
+    running_ = true;
+    for (WorkerThread* worker : pool_) {
+      worker->Start();
+    }
+  }
 
   void Join() {
+    for (WorkerThread* worker : pool_) {
+      worker->Join();
+    }
+  }
+
+  bool IsRunning() const { return running_; }
+
+ private:
+  void RunWokers() {
 
   }
 
- private:
-  size_t thread_num_;
-  std::vector<WorkerThread> pool_;
-  
+  size_t num_of_workers_;
+  bool running_;
+  std::vector<WorkerThread*> pool_;
 };
 
 }  // namespace runner

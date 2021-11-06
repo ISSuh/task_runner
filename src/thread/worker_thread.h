@@ -16,10 +16,16 @@ class WorkerThread {
  public:
   class Delegate {
    public:
-    virtual void OnStartWork() = 0;
-    virtual void OnDidFinishWork() = 0;
+    virtual void OnStartThread() = 0;
+    virtual void OnFinishThread() = 0;
 
-    virtual void WakeUp() = 0;
+    virtual void OnStartTask() = 0;
+    virtual void OnDidFinishTask() = 0;
+
+    virtual bool CanRunning() = 0;
+    virtual bool CanWakeUp() = 0;
+
+    virtual Task NextTask() = 0;
   };
 
   virtual void Work() = 0;
@@ -39,15 +45,16 @@ class WorkerThread {
     : delegate_(delegate) {}
   virtual ~WorkerThread() = default;
 
+  Delegate* delegate_;
+
  private:
-  static void ExcuteWork(WorkerThread* worker_, Delegate* delegae) {
-    delegae->OnStartWork();
+  static void ExcuteWork(WorkerThread* worker_, Delegate* delegate) {
+    delegate->OnStartThread();
     worker_->Work();
-    delegae->OnDidFinishWork();
+    delegate->OnFinishThread();
   }
 
   std::unique_ptr<std::thread> worker_;
-  Delegate* delegate_;
 };
 
 }  // namespace runner

@@ -13,7 +13,7 @@
 
 namespace runner {
 
-class TaskRunner : WorkerThread::Delegate  {
+class TaskRunner : public WorkerThread::Delegate  {
  public:
   virtual void PostTask(std::function<void()> task) {
     PostDelayTask(task, 0);

@@ -7,26 +7,32 @@
 #ifndef TASK_TASK_EXECUTOR_H_
 #define TASK_TASK_EXECUTOR_H_
 
+#include <memory>
+#include <thread>
+#include <condition_variable>
+
 #include "thread/worker_thread.h"
 #include "task/task_runner.h"
+#include "task/task_dispatcher.h"
 
 namespace runner {
 
 class TaskExecutor : public WorkerThread {
  public:
   TaskExecutor(TaskRunner* task_runner)
-    : WorkerThread(task_runner).
-      task_runner_(task_runner) {}
+    : WorkerThread(task_runner) {}
 
-  ~TaskExecutor() {
-  }
+  virtual ~TaskExecutor() = default;
 
   void Work() override {
+    while (delegate_->CanWakeUp() || delegate_->CanRunning()) {
+      Task task = delegate_->NextTask();
 
+      delegate_->OnStartTask();
+      task.task();
+      delegate_->OnDidFinishTask();
+    }
   }
-
- private:
-  TaskRunner* task_runner_;
 };
 
 }  // namespace runner
