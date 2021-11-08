@@ -41,7 +41,7 @@ bool SequencedTaskRunner::CheckTerminatedAllWorkers() {
   return false;
 }
 
-void SequencedTaskRunner::WiatForFinishWorkers() {
+void SequencedTaskRunner::WiatForTerminateWorkers() {
   LOG(LogLevel::TRACE) << __func__;
   if (executor_ == nullptr) {
     return;

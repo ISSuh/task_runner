@@ -1,5 +1,5 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 3.5)
-PROJECT (TaskRunner)
+PROJECT(task_runner)
 
 #-------------------------------------------------------------------------------
 # Set Compiler
@@ -12,14 +12,14 @@ ADD_COMPILE_OPTIONS (-g -Wall -Wextra)
 #-------------------------------------------------------------------------------
 # Set Configure
 #-------------------------------------------------------------------------------
-SET(TARGET_NAME ${PROJECT_NAME})
+SET(TASK_RUNNER_LIBRARY_NAME ${PROJECT_NAME})
 
 #-------------------------------------------------------------------------------
 # Set Build Variable
 #-------------------------------------------------------------------------------
 SET(PROJECT_DIR ${PROJECT_SOURCE_DIR})
-SET(BUILD_DIR_EXAMPLES ${CMAKE_SOURCE_DIR}/build)
-SET(BUILD_DIR_TESTS ${CMAKE_SOURCE_DIR}/build/bin/tests)
+SET(BUILD_DIR_EXAMPLES ${CMAKE_SOURCE_DIR}/build/example)
+SET(BUILD_DIR_TESTS ${CMAKE_SOURCE_DIR}/build/tests)
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/src
@@ -34,6 +34,7 @@ SET(PROJECT_CALLBACK_SRC
 )
 
 SET(PROJECT_TASK_SRC
+  ${PROJECT_DIR}/src/task/task_runner.cc
   ${PROJECT_DIR}/src/task/sequenced_task_runner.cc
 )
 
@@ -42,6 +43,7 @@ SET(PROJECT_THREAD_SRC
 )
 
 SET(PROJECT_SRC
+  src/task_manager.cc
   ${PROJECT_BASE_SRC}
   ${PROJECT_CALLBACK_SRC}
   ${PROJECT_TASK_SRC}
@@ -51,8 +53,11 @@ SET(PROJECT_SRC
 #-------------------------------------------------------------------------------
 # Set SubDirectory
 #-------------------------------------------------------------------------------
-add_library(task_runner STATIC ${PROJECT_SRC})
-
+add_library(${TASK_RUNNER_LIBRARY_NAME} STATIC ${PROJECT_SRC})
+target_link_libraries(${TASK_RUNNER_LIBRARY_NAME}
+ PUBLIC
+  pthread
+)
 
 add_subdirectory(example)
 

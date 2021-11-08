@@ -21,12 +21,12 @@ class TaskRunner {
     CONCURRENT
   };
 
-  void PostTask(std::function<void()> task) { PostDelayTask(task, 0);  }
+  virtual void PostTask(std::function<void()> task);
   virtual void PostDelayTask(std::function<void()> task, uint64_t delay) = 0;
 
  protected:
-  TaskRunner() = default;
-  virtual ~TaskRunner() = default;
+  TaskRunner();
+  virtual ~TaskRunner();
 };
 
 class TaskRunnerProxy : public TaskRunner,
@@ -34,16 +34,14 @@ class TaskRunnerProxy : public TaskRunner,
  public:
   virtual bool CheckTerminatedAllWorkers() = 0;
   virtual void StopRunner() = 0;
-  virtual void WiatForFinishWorkers() = 0;
+  virtual void WiatForTerminateWorkers() = 0;
   virtual std::vector<uint64_t> WorkersIdLists() = 0;
 
-  std::string label() const { return label_; }
+  std::string label() const;
 
  protected:
-  explicit TaskRunnerProxy(const std::string& label)
-    : label_(label) {}
-
-  virtual ~TaskRunnerProxy() {};
+  explicit TaskRunnerProxy(const std::string& label);
+  virtual ~TaskRunnerProxy();
 
  private:
   std::string label_;

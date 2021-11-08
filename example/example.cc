@@ -78,6 +78,5 @@ int main() {
   test_runner = manager.CreateTaskRunner("test", runner::TaskRunner::Type::SEQUENCE);
   test_runner->PostTask(TestFunc);
 
-
-  manager.WaitForFinishTaskRunner();
+  manager.WaitForTerminateTaskRunner();
 }

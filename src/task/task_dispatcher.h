@@ -16,28 +16,6 @@ namespace runner {
 
 class TaskDispatcher {
  public:
-  class TaskDispatcherClient {
-   public:
-
-  };
-
-  void PushTask(Task task) {
-    // need lock
-
-    task_queue_.push(task);
-  }
-
-  Task NextTask() {
-    // need lock
-
-    Task task = task_queue_.front();
-    task_queue_.pop();
-
-    return task;
-  }
-
- private:
-  TaskQueue task_queue_;
 };
 
 }  // namespace runner

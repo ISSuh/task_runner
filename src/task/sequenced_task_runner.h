@@ -27,9 +27,11 @@ class SequencedTaskRunner final : public TaskRunnerProxy {
 
   // TaksRunner
   void PostDelayTask(std::function<void()>, uint64_t delay) override;
-  bool CheckTerminatedAllWorkers() override;
+
   void StopRunner() override;
-  void WiatForFinishWorkers() override;
+  bool CheckTerminatedAllWorkers() override;
+  void WiatForTerminateWorkers() override;
+
   std::vector<uint64_t> WorkersIdLists() override;
 
   // WokerThread::Delegate
