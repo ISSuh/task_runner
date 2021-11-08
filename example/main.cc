@@ -53,3 +53,31 @@
 
 //   runner.WiatForFinish();
 // }
+
+#include "task_manager.h"
+#include "task/task_runner.h"
+
+runner::TaskManager manager;
+runner::TaskRunner* test_runner = nullptr;
+
+void TestFunc() {
+  static uint32_t count = 0;
+  std::cout << __func__ << " - count : " << count << std::endl;
+
+  ++count;
+
+  if (count < 100) {
+    test_runner->PostDelayTask(TestFunc, 100);
+  } else {
+    manager.StopAllRunner();
+  }
+}
+
+int main() {
+  std::cout << "Hello World!\n";
+  test_runner = manager.CreateTaskRunner("test", runner::TaskRunner::Type::SEQUENCE);
+  test_runner->PostTask(TestFunc);
+
+
+  manager.WaitForFinishTaskRunner();
+}

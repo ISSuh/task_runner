@@ -8,11 +8,8 @@
 #define BASE_LOGGING_H_
 
 #include <iostream>
-#include <sstream>
 #include <string>
-#include <chrono>
-#include <ctime>
-#include <iomanip>
+#include <sstream>
 
 namespace runner {
 

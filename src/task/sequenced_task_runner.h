@@ -20,16 +20,17 @@ namespace runner {
 class TaskExecutor;
 class TaskQueue;
 
-class SequencedTaskRunner final : public TaskRunner {
+class SequencedTaskRunner final : public TaskRunnerProxy {
  public:
-  SequencedTaskRunner();
+  SequencedTaskRunner(const std::string& label);
   virtual ~SequencedTaskRunner();
 
   // TaksRunner
   void PostDelayTask(std::function<void()>, uint64_t delay) override;
   bool CheckTerminatedAllWorkers() override;
   void StopRunner() override;
-  std::vector<uint64_t> WorkerIdLists() override;
+  void WiatForFinishWorkers() override;
+  std::vector<uint64_t> WorkersIdLists() override;
 
   // WokerThread::Delegate
   void OnStartThread() override;

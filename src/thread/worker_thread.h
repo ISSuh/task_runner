@@ -44,8 +44,8 @@ class WorkerThread {
  private:
   static void ExcuteWork(WorkerThread* worker_, Delegate* delegate);
 
-  uint64_t id_;
   std::unique_ptr<std::thread> worker_;
+  uint64_t id_;
 };
 
 }  // namespace runner

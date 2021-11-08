@@ -13,12 +13,12 @@
 namespace runner {
 
 struct Task {
-  Task() {}
   Task(std::function<void()> task, uint64_t delay)
-    : delay(delay), task(task) {}
+    : delay(delay), run(task) {}
+  ~Task() = default;
 
   uint64_t delay;
-  std::function<void()> task;
+  std::function<void()> run;
 };
 
 }  // namespace runner

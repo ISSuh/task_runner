@@ -26,6 +26,7 @@ foreach(EXAMPLE_NAME ${EXAMPLE_SRC})
   target_link_libraries( ${EXAMPLE_NAME}
   PUBLIC
     pthread
+    task_runner
   )
 
   set_property(TARGET ${EXAMPLE_NAME} PROPERTY FOLDER "example")

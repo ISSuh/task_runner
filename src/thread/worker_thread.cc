@@ -5,6 +5,7 @@
  */
 
 #include "thread/worker_thread.h"
+#include "base/logging.h"
 
 namespace runner {
 
@@ -21,12 +22,14 @@ uint64_t WorkerThread::GetWokerId() const {
 }
 
 void WorkerThread::Join() {
+  LOG(LogLevel::TRACE) << __func__;
   if (worker_->joinable()) {
     worker_->join();
   }
 }
 
 void WorkerThread::ExcuteWork(WorkerThread* worker_, Delegate* delegate) {
+  LOG(LogLevel::TRACE) << __func__;
   delegate->OnStartThread();
   worker_->Work();
   delegate->OnFinishThread();
