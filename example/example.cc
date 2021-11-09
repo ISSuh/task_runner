@@ -6,6 +6,7 @@
  */
 
 #include <iostream>
+#include "base/time.h"
 
 // #include "task/sequenced_task_runner.h"
 
@@ -54,6 +55,7 @@
 //   runner.WiatForFinish();
 // }
 
+#include "base/time.h"
 #include "task_manager.h"
 #include "task/task_runner.h"
 
@@ -62,12 +64,13 @@ runner::TaskRunner* test_runner = nullptr;
 
 void TestFunc() {
   static uint32_t count = 0;
-  std::cout << __func__ << " - count : " << count << std::endl;
+  std::cout << __func__ << " - count : " << count << " / " << runner::Time::InNanosecond() << std::endl;
 
   ++count;
 
   if (count < 100) {
-    test_runner->PostDelayTask(TestFunc, 100);
+    runner::TimeTick delay = runner::TimeTick::FromMilliseconds(100);
+    test_runner->PostDelayTask(TestFunc, delay);
   } else {
     manager.StopAllRunner();
   }

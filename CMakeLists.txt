@@ -26,6 +26,7 @@ include_directories(
 )
 
 SET(PROJECT_BASE_SRC
+  ${PROJECT_DIR}/src/base/time.cc
   ${PROJECT_DIR}/src/base/logging.cc
 )
 

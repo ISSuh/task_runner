@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <functional>
+#include "base/time.h"
 
 #include "thread/worker_thread.h"
 
@@ -22,7 +23,7 @@ class TaskRunner {
   };
 
   virtual void PostTask(std::function<void()> task);
-  virtual void PostDelayTask(std::function<void()> task, uint64_t delay) = 0;
+  virtual void PostDelayTask(std::function<void()> task, TimeTick delay) = 0;
 
  protected:
   TaskRunner();

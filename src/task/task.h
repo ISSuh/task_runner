@@ -10,14 +10,16 @@
 #include <stddef.h>
 #include <functional>
 
+#include "base/time.h"
+
 namespace runner {
 
 struct Task {
-  Task(std::function<void()> task, uint64_t delay)
+  Task(std::function<void()> task, TimeTick delay)
     : delay(delay), run(task) {}
   ~Task() = default;
 
-  uint64_t delay;
+  TimeTick delay;
   std::function<void()> run;
 };
 

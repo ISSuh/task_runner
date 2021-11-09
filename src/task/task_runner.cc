@@ -20,7 +20,7 @@ TaskRunner::~TaskRunner() {
 }
 
 void TaskRunner::PostTask(std::function<void()> task) {
-  PostDelayTask(task, 0);
+  PostDelayTask(task, TimeTick());
 }
 
 TaskRunnerProxy::TaskRunnerProxy(const std::string& label)

@@ -14,6 +14,7 @@
 #include "task/task_runner.h"
 #include "task/task_executor.h"
 #include "task/task_queue.h"
+#include "base/time.h"
 
 namespace runner {
 
@@ -26,7 +27,7 @@ class SequencedTaskRunner final : public TaskRunnerProxy {
   virtual ~SequencedTaskRunner();
 
   // TaksRunner
-  void PostDelayTask(std::function<void()>, uint64_t delay) override;
+  void PostDelayTask(std::function<void()>, TimeTick delay) override;
 
   void StopRunner() override;
   bool CheckTerminatedAllWorkers() override;

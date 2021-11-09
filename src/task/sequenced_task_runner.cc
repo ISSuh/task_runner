@@ -19,7 +19,7 @@ SequencedTaskRunner::~SequencedTaskRunner() {
   StopRunner();
 }
 
-void SequencedTaskRunner::PostDelayTask(std::function<void()> task_callback, uint64_t delay) {
+void SequencedTaskRunner::PostDelayTask(std::function<void()> task_callback, TimeTick delay) {
   LOG(LogLevel::TRACE) << __func__;
   std::lock_guard<std::mutex> lock(mutex_);
 

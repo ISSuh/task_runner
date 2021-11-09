@@ -7,34 +7,88 @@
 #ifndef BASE_TIME_H_
 #define BASE_TIME_H_
 
-#include <string>
-#include <chrono>
-#include <ctime>
-#include <iomanip>
-#include <sstream>
+#include <stddef.h>
 
 namespace runner {
 
 class Time {
  public:
-  Time() = default;
-  ~Time() = default;
+  static int64_t InNanosecond();
+  static int64_t InMicrosecond();
+  static int64_t InMillisecond();
+  static int64_t InSecond();
 
-  static std::string CurrentTimeToDateStr() {
-    auto now = std::chrono::system_clock::now();
-    std::time_t current_time = std::chrono::system_clock::to_time_t(now);
-    std::tm current_local_time = *std::localtime(&current_time);
-
-    const auto ns = std::chrono::time_point_cast<std::chrono::nanoseconds>(now).time_since_epoch().count() % 1000000;
-
-    std::ostringstream date_str_stream;
-
-    date_str_stream << std::put_time(&current_local_time, "%Y-%m-%d %H:%M:%S");
-    date_str_stream << '.' << std::setfill('0') << std::setw(6) << ns;
-
-    return date_str_stream.str();
-  }
+  static std::string CurrentTimeToDateStr();
 };
+
+class TimeTick {
+ public:
+  static const int64_t kNanosecondsPerMicrosecond = 1000;
+  static const int64_t kMicrosecondsPerMillisecond = 1000;
+  
+  TimeTick();
+  explicit TimeTick(int64_t us);
+  ~TimeTick();
+  
+  static TimeTick FromMilliseconds(int64_t ms) {
+    return From(ms, kMicrosecondsPerMillisecond);
+  }
+
+  // should change type of tick_ to int64
+  // need check std::numeric_limits<int64_t>::max() of std::numeric_limits<int64_t>::min()
+  TimeTick operator+(TimeTick other) const {
+    return TimeTick(tick_ + other.tick_);
+  }
+
+  TimeTick operator-(TimeTick other) const {
+    return TimeTick(tick_ - other.tick_);
+  }
+
+  TimeTick& operator+=(TimeTick other) {
+    return *this = (*this + other);
+  }
+
+  TimeTick& operator-=(TimeTick other) {
+    return *this = (*this - other);
+  }
+
+  TimeTick operator-() const {
+    return TimeTick(-tick_);
+  }
+
+  bool operator==(TimeTick other) const {
+    return tick_ == other.tick_;
+  }
+
+  bool operator!=(TimeTick other) const {
+    return tick_ != other.tick_;
+  }
+
+  bool operator<(TimeTick other) const {
+    return tick_ < other.tick_;
+  }
+
+  bool operator<=(TimeTick other) const {
+    return tick_ <= other.tick_;
+  }
+
+  bool operator>(TimeTick other) const {
+    return tick_ > other.tick_;
+  }
+
+  bool operator>=(TimeTick other) const {
+    return tick_ >= other.tick_;
+  }
+
+ private:  
+  static TimeTick From(int64_t value, int64_t offset) {
+    return TimeTick(value * offset);
+  }
+
+  // microseconds
+  int64_t tick_;
+};
+
 
 }  // namespace runner
 
