@@ -25,7 +25,7 @@ class TaskExecutor : public WorkerThread {
       Task task = delegate_->NextTask();
 
       delegate_->OnStartTask();
-      task.run();
+      task.callback();
       delegate_->OnDidFinishTask();
     }
   }

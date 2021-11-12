@@ -9,6 +9,7 @@
 
 #include <thread>
 #include <memory>
+#include <atomic>
 
 #include "task/task.h"
 
@@ -18,8 +19,8 @@ class WorkerThread {
  public:
   class Delegate {
    public:
-    virtual void OnStartThread() = 0;
-    virtual void OnFinishThread() = 0;
+    virtual void OnStartWorker() = 0;
+    virtual void OnTerminateWorker() = 0;
 
     virtual void OnStartTask() = 0;
     virtual void OnDidFinishTask() = 0;
@@ -32,7 +33,11 @@ class WorkerThread {
 
   virtual void Work() = 0;
 
-  uint64_t GetWokerId() const;  
+  uint64_t GetWokerId() const;
+
+  void StartWorker();
+  void TerminateWorker();
+
   void Join();
 
  protected:
@@ -42,10 +47,11 @@ class WorkerThread {
   Delegate* delegate_;
 
  private:
-  static void ExcuteWork(WorkerThread* worker_, Delegate* delegate);
+  static void ExcuteWork(WorkerThread* worker);
 
   std::unique_ptr<std::thread> worker_;
   uint64_t id_;
+  std::atomic_bool running_;
 };
 
 }  // namespace runner

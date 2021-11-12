@@ -33,16 +33,15 @@ class TaskRunner {
 class TaskRunnerProxy : public TaskRunner,
                         public WorkerThread::Delegate  {
  public:
+  explicit TaskRunnerProxy(const std::string& label);
+  virtual ~TaskRunnerProxy();
+
   virtual bool CheckTerminatedAllWorkers() = 0;
   virtual void StopRunner() = 0;
   virtual void WiatForTerminateWorkers() = 0;
   virtual std::vector<uint64_t> WorkersIdLists() = 0;
 
   std::string label() const;
-
- protected:
-  explicit TaskRunnerProxy(const std::string& label);
-  virtual ~TaskRunnerProxy();
 
  private:
   std::string label_;

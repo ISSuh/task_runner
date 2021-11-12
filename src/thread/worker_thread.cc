@@ -11,8 +11,9 @@ namespace runner {
 
 WorkerThread::WorkerThread(Delegate* delegate)
   : delegate_(delegate),
-    worker_(new std::thread(ExcuteWork, this, delegate_)),
-    id_(std::hash<std::thread::id>{}(worker_->get_id())) {
+    worker_(new std::thread(ExcuteWork, this)),
+    id_(std::hash<std::thread::id>{}(worker_->get_id())),
+    running_(false) {
 }
 
 WorkerThread::~WorkerThread() = default;
@@ -23,16 +24,32 @@ uint64_t WorkerThread::GetWokerId() const {
 
 void WorkerThread::Join() {
   LOG(LogLevel::TRACE) << __func__;
+  if (!running_.load()) {
+    return;
+  }
+
   if (worker_->joinable()) {
     worker_->join();
   }
+
+  worker_.reset();
 }
 
-void WorkerThread::ExcuteWork(WorkerThread* worker_, Delegate* delegate) {
+void WorkerThread::StartWorker() {
+  running_.store(true);
+  delegate_->OnStartWorker();
+}
+
+void WorkerThread::TerminateWorker() {
+  delegate_->OnTerminateWorker();
+  running_.store(false);
+}
+
+void WorkerThread::ExcuteWork(WorkerThread* worker) {
   LOG(LogLevel::TRACE) << __func__;
-  delegate->OnStartThread();
-  worker_->Work();
-  delegate->OnFinishThread();
+  worker->StartWorker();
+  worker->Work();
+  worker->TerminateWorker();
 }
 
 }  // namespace runner

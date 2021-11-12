@@ -10,6 +10,7 @@
 #include <vector>
 #include <mutex>
 #include <memory>
+#include <queue>
 
 #include "task/task_runner.h"
 #include "task/task_executor.h"
@@ -36,8 +37,8 @@ class SequencedTaskRunner final : public TaskRunnerProxy {
   std::vector<uint64_t> WorkersIdLists() override;
 
   // WokerThread::Delegate
-  void OnStartThread() override;
-  void OnFinishThread() override;
+  void OnStartWorker() override;
+  void OnTerminateWorker() override;
   void OnStartTask() override;
   void OnDidFinishTask() override;
 
@@ -48,7 +49,10 @@ class SequencedTaskRunner final : public TaskRunnerProxy {
   
  private:
   std::unique_ptr<TaskExecutor> executor_;
+  // TaskQueue queue_;
+  using TaskQueue = std::priority_queue<Task>;
   TaskQueue queue_;
+
   bool running_;
   
   std::condition_variable cv_;

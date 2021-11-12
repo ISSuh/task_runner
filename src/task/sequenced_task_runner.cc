@@ -57,11 +57,11 @@ std::vector<uint64_t> SequencedTaskRunner::WorkersIdLists() {
   return {executor_->GetWokerId()};
 }
 
-void SequencedTaskRunner::OnStartThread() {
+void SequencedTaskRunner::OnStartWorker() {
   LOG(LogLevel::TRACE) << __func__;
 }
 
-void SequencedTaskRunner::OnFinishThread() {
+void SequencedTaskRunner::OnTerminateWorker() {
   LOG(LogLevel::TRACE) << __func__;
   cv_.notify_all();
 }
@@ -83,7 +83,7 @@ Task SequencedTaskRunner::NextTask() {
   LOG(LogLevel::TRACE) << __func__;
   std::lock_guard<std::mutex> lock(mutex_);
 
-  Task task = queue_.front();
+  Task task = queue_.top();
   queue_.pop();
 
   return task;

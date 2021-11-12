@@ -7,15 +7,24 @@
 #ifndef TASK_TASK_DISPATCHER_H_
 #define TASK_TASK_DISPATCHER_H_
 
-#include <mutex>
+#include <vector>
+#include <map>
 
-#include "task/task.h"
-#include "task/task_queue.h"
+#include "base/time.h"
+#include "task/task_runner.h"
 
 namespace runner {
 
 class TaskDispatcher {
  public:
+  TaskDispatcher();
+  ~TaskDispatcher();
+
+  void PostTask(const std::string& task_runner_label,
+                std::function<void()> task_callback);
+
+  void PostDelayTask(const std::string& task_runner_label,
+                std::function<void()> task_callback, TimeTick delay);
 };
 
 }  // namespace runner

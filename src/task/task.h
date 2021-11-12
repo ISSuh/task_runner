@@ -15,12 +15,16 @@
 namespace runner {
 
 struct Task {
-  Task(std::function<void()> task, TimeTick delay)
-    : delay(delay), run(task) {}
+  Task(std::function<void()> callback, TimeTick delay)
+    : delay(delay), callback(callback) {}
   ~Task() = default;
 
   TimeTick delay;
-  std::function<void()> run;
+  std::function<void()> callback;
+
+  bool operator<(const Task& s) const {
+        return delay < s.delay;
+  }
 };
 
 }  // namespace runner
