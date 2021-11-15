@@ -37,10 +37,12 @@ SET(PROJECT_CALLBACK_SRC
 SET(PROJECT_TASK_SRC
   ${PROJECT_DIR}/src/task/task_runner.cc
   ${PROJECT_DIR}/src/task/sequenced_task_runner.cc
+  ${PROJECT_DIR}/src/task/conqurrent_task_runner.cc
+  ${PROJECT_DIR}/src/task/task_executor.cc
+  ${PROJECT_DIR}/src/task/task_dispatcher.cc
 )
 
 SET(PROJECT_THREAD_SRC
-  ${PROJECT_DIR}/src/thread/worker_thread.cc
 )
 
 SET(PROJECT_SRC

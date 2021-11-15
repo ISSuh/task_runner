@@ -5,22 +5,30 @@
  */
 
 #include "task/task_dispatcher.h"
+#include "task/task_runner.h"
 #include "base/logging.h"
 
 namespace runner {
 
-TaskDispatcher::TaskDispatcher() = default;
+TaskDispatcher::TaskDispatcher(TaskManager* manager)
+  : manager_(manager) {
+}
 
 TaskDispatcher::~TaskDispatcher() = default;
 
-void TaskDispatcher::PostTask(const std::string& task_runner_label,
+void TaskDispatcher::PostTask(const std::string& label,
               std::function<void()> task_callback) {
-
-  PostDelayTask(task_runner_label, task_callback, TimeTick());
+  PostDelayTask(label, task_callback, TimeTick());
 }
 
-void TaskDispatcher::PostDelayTask(const std::string& task_runner_label,
+void TaskDispatcher::PostDelayTask(const std::string& label,
               std::function<void()> task_callback, TimeTick delay) {
+  TaskRunner* runner = manager_->GetTaskRunner(label);
+  if (runner == nullptr) {
+    return;
+  }
 
+  runner->PostDelayTask(task_callback, delay);
 }
+
 }  // namespace runner

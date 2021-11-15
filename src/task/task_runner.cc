@@ -8,7 +8,6 @@
 #include <functional>
 
 #include "task/task_runner.h"
-#include "thread/worker_thread.h"
 
 namespace runner {
 
@@ -16,7 +15,6 @@ TaskRunner::TaskRunner() {
 }
 
 TaskRunner::~TaskRunner() {
-
 }
 
 void TaskRunner::PostTask(std::function<void()> task) {
@@ -24,12 +22,12 @@ void TaskRunner::PostTask(std::function<void()> task) {
 }
 
 TaskRunnerProxy::TaskRunnerProxy(const std::string& label)
-  : label_(label) {  
+  : label_(label) {
 }
 
 TaskRunnerProxy::~TaskRunnerProxy() = default;
 
-std::string TaskRunnerProxy::label() const { 
+std::string TaskRunnerProxy::label() const {
   return label_;
 }
 

@@ -58,9 +58,9 @@
 #include "base/time.h"
 #include "task_manager.h"
 #include "task/task_runner.h"
+#include "task/task_dispatcher.h"
 
 runner::TaskManager manager;
-runner::TaskRunner* test_runner = nullptr;
 
 void TestFunc() {
   static uint32_t count = 0;
@@ -69,8 +69,9 @@ void TestFunc() {
   ++count;
 
   if (count < 100) {
+    runner::TaskDispatcher* dispatcher = manager.GetTaskDispatcher();
     runner::TimeTick delay = runner::TimeTick::FromMilliseconds(100);
-    test_runner->PostDelayTask(TestFunc, delay);
+    dispatcher->PostDelayTask("test", TestFunc, delay);
   } else {
     manager.StopAllRunner();
   }
@@ -78,7 +79,7 @@ void TestFunc() {
 
 int main() {
   std::cout << "Hello World!\n";
-  test_runner = manager.CreateTaskRunner("test", runner::TaskRunner::Type::SEQUENCE);
+  runner::TaskRunner* test_runner = manager.CreateTaskRunner("test", runner::TaskRunner::Type::CONCURRENT, 5);
   test_runner->PostTask(TestFunc);
 
   manager.WaitForTerminateAllTaskRunner();

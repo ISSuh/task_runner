@@ -7,28 +7,37 @@
 #ifndef TASK_TASK_EXECUTOR_H_
 #define TASK_TASK_EXECUTOR_H_
 
-#include "thread/worker_thread.h"
+#include <memory>
+#include <thread>
+#include <atomic>
+
 #include "task/task_runner.h"
-#include "base/logging.h"
+#include "task/task_executor_delegate.h"
 
 namespace runner {
 
-class TaskExecutor : public WorkerThread {
+class TaskRunnerProxy;
+
+class TaskExecutor {
  public:
-  TaskExecutor(TaskRunnerProxy* task_runner_proxy)
-    : WorkerThread(task_runner_proxy) {}
+  explicit TaskExecutor(TaskRunnerProxy* task_runner_proxy);
+  virtual ~TaskExecutor();
 
-  virtual ~TaskExecutor() = default;
+  void Join();
+  uint64_t GetWokerId() const;
 
-  void Work() override {
-    while (delegate_->CanRunning() && delegate_->CanWakeUp()) {
-      Task task = delegate_->NextTask();
+ private:
+  void ExcuteWork();
 
-      delegate_->OnStartTask();
-      task.callback();
-      delegate_->OnDidFinishTask();
-    }
-  }
+  void StartWorker();
+  void Work();
+  void TerminateWorker();
+
+  std::unique_ptr<std::thread> worker_;
+  uint64_t id_;
+  std::atomic_bool running_;
+
+  TaskExecutorDelegate* delegate_;
 };
 
 }  // namespace runner

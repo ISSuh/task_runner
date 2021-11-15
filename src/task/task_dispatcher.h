@@ -7,17 +7,20 @@
 #ifndef TASK_TASK_DISPATCHER_H_
 #define TASK_TASK_DISPATCHER_H_
 
+#include <string>
 #include <vector>
 #include <map>
 
 #include "base/time.h"
-#include "task/task_runner.h"
+#include "task_manager.h"
 
 namespace runner {
 
+class TaskManager;
+
 class TaskDispatcher {
  public:
-  TaskDispatcher();
+  explicit TaskDispatcher(TaskManager* manager);
   ~TaskDispatcher();
 
   void PostTask(const std::string& task_runner_label,
@@ -25,6 +28,9 @@ class TaskDispatcher {
 
   void PostDelayTask(const std::string& task_runner_label,
                 std::function<void()> task_callback, TimeTick delay);
+
+ private:
+  TaskManager* manager_;
 };
 
 }  // namespace runner

@@ -4,8 +4,8 @@
  *
  */
 
-#ifndef TASK_SEQUENCED_TASK_RUNNER_H_
-#define TASK_SEQUENCED_TASK_RUNNER_H_
+#ifndef TASK_CONCURRENT_TASK_RUNNER_H_
+#define TASK_CONCURRENT_TASK_RUNNER_H_
 
 #include <vector>
 #include <string>
@@ -15,7 +15,7 @@
 #include <condition_variable>
 
 #include "task/task_runner.h"
-#include "task/task_executor.h"
+#include "task/task_executor_pool.h"
 #include "base/time.h"
 
 namespace runner {
@@ -23,10 +23,10 @@ namespace runner {
 class TaskExecutor;
 class TaskQueue;
 
-class SequencedTaskRunner final : public TaskRunnerProxy {
+class ConcurrentTaskRunner final : public TaskRunnerProxy {
  public:
-  explicit SequencedTaskRunner(const std::string& label);
-  virtual ~SequencedTaskRunner();
+  explicit ConcurrentTaskRunner(const std::string& label, size_t num);
+  virtual ~ConcurrentTaskRunner();
 
   // TaksRunner
   void PostDelayTask(std::function<void()>, TimeTick delay) override;
@@ -49,7 +49,7 @@ class SequencedTaskRunner final : public TaskRunnerProxy {
   bool CanWakeUp() override;
 
  private:
-  std::unique_ptr<TaskExecutor> executor_;
+  std::unique_ptr<TaskExecutorPool> executor_pool_;
 
   using TaskQueue = std::priority_queue<Task>;
   TaskQueue queue_;
@@ -62,4 +62,4 @@ class SequencedTaskRunner final : public TaskRunnerProxy {
 
 }  // namespace runner
 
-#endif  // TASK_SEQUENCED_TASK_RUNNER_H_
+#endif  // TASK_CONCURRENT_TASK_RUNNER_H_

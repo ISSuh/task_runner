@@ -4,73 +4,73 @@
  *
  */
 
-#include "task/sequenced_task_runner.h"
+#include "task/conqurrent_task_runner.h"
 #include "base/logging.h"
 
 namespace runner {
 
-SequencedTaskRunner::SequencedTaskRunner(const std::string& label)
+ConcurrentTaskRunner::ConcurrentTaskRunner(const std::string& label, size_t num)
   : TaskRunnerProxy(label),
-    executor_(new TaskExecutor(dynamic_cast<TaskRunnerProxy*>(this))),
+    executor_pool_(new TaskExecutorPool(this, num)),
     running_(true) {
 }
 
-SequencedTaskRunner::~SequencedTaskRunner() {
+ConcurrentTaskRunner::~ConcurrentTaskRunner() {
   StopRunner();
 }
 
-void SequencedTaskRunner::PostDelayTask(std::function<void()> task_callback, TimeTick delay) {
+void ConcurrentTaskRunner::PostDelayTask(std::function<void()> task_callback, TimeTick delay) {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
   std::lock_guard<std::mutex> lock(mutex_);
   queue_.push(Task(task_callback, delay));
   cv_.notify_all();
 }
 
-void SequencedTaskRunner::StopRunner() {
+void ConcurrentTaskRunner::StopRunner() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
   std::lock_guard<std::mutex> lock(mutex_);
   running_ = false;
   cv_.notify_all();
 }
 
-void SequencedTaskRunner::WiatForTerminateWorkers() {
+void ConcurrentTaskRunner::WiatForTerminateWorkers() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
-  if (executor_ == nullptr) {
+  if (executor_pool_ == nullptr) {
     return;
   }
-  executor_->Join();
+  executor_pool_->WiatForTerminateWorkers();
 }
 
-std::vector<uint64_t> SequencedTaskRunner::WorkersIdLists() {
+std::vector<uint64_t> ConcurrentTaskRunner::WorkersIdLists() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
-  if (executor_ == nullptr) {
+  if (executor_pool_ == nullptr) {
     return std::vector<uint64_t>();
   }
-  return {executor_->GetWokerId()};
+  return executor_pool_->WorkersIdLists();
 }
 
-void SequencedTaskRunner::OnStartWorker() {
+void ConcurrentTaskRunner::OnStartWorker() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
 }
 
-void SequencedTaskRunner::OnTerminateWorker() {
+void ConcurrentTaskRunner::OnTerminateWorker() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
 }
 
-void SequencedTaskRunner::OnStartTask() {
+void ConcurrentTaskRunner::OnStartTask() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
 }
 
-void SequencedTaskRunner::OnDidFinishTask() {
+void ConcurrentTaskRunner::OnDidFinishTask() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
 }
 
-bool SequencedTaskRunner::CanRunning() {
+bool ConcurrentTaskRunner::CanRunning() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
   return running_;
 }
 
-Task SequencedTaskRunner::NextTask() {
+Task ConcurrentTaskRunner::NextTask() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
   std::lock_guard<std::mutex> lock(mutex_);
 
@@ -80,7 +80,7 @@ Task SequencedTaskRunner::NextTask() {
   return task;
 }
 
-bool SequencedTaskRunner::CanWakeUp() {
+bool ConcurrentTaskRunner::CanWakeUp() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
 
   {
