@@ -13,6 +13,7 @@
 #include <memory>
 
 #include "task/task_executor.h"
+#include "base/logging.h"
 
 namespace runner {
 
@@ -28,18 +29,19 @@ class TaskExecutorPool {
 
   ~TaskExecutorPool() {}
 
-  void WiatForTerminateWorkers() {
-    auto iter = executors_.begin();
-    while (!executors_.empty()) {
-      uint64_t id = iter->first;
-      TaskExecutor* executor = iter->second.get();
-
-      executor->Join();
-
-      executors_.at(id).reset(nullptr);
-      executors_.erase(id);
-      ++iter;
+  void StopWorkers() {
+    for (auto& excutor : executors_) {
+      excutor.second->Stop();
     }
+  }
+
+  void WiatForTerminateWorkers() {
+    for (auto& excutor : executors_) {
+      excutor.second->Join();
+      excutor.second.reset(nullptr);
+    }
+
+    LOG(INFO) << __func__ << " - after join";
   }
 
   std::vector<uint64_t> WorkersIdLists() {

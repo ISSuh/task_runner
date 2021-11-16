@@ -16,20 +16,24 @@ ConcurrentTaskRunner::ConcurrentTaskRunner(const std::string& label, size_t num)
 }
 
 ConcurrentTaskRunner::~ConcurrentTaskRunner() {
-  StopRunner();
 }
 
 void ConcurrentTaskRunner::PostDelayTask(std::function<void()> task_callback, TimeTick delay) {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
   std::lock_guard<std::mutex> lock(mutex_);
   queue_.push(Task(task_callback, delay));
-  cv_.notify_all();
+  cv_.notify_one();
 }
 
 void ConcurrentTaskRunner::StopRunner() {
-  LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
-  std::lock_guard<std::mutex> lock(mutex_);
-  running_ = false;
+  LOG(LogLevel::INFO) << "[" << label() << "] " << __func__;
+
+  executor_pool_->StopWorkers();
+
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    running_ = false;
+  }
   cv_.notify_all();
 }
 
@@ -47,6 +51,10 @@ std::vector<uint64_t> ConcurrentTaskRunner::WorkersIdLists() {
     return std::vector<uint64_t>();
   }
   return executor_pool_->WorkersIdLists();
+}
+
+bool ConcurrentTaskRunner::IsRunning() {
+  return running_;
 }
 
 void ConcurrentTaskRunner::OnStartWorker() {
@@ -73,6 +81,10 @@ bool ConcurrentTaskRunner::CanRunning() {
 Task ConcurrentTaskRunner::NextTask() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
   std::lock_guard<std::mutex> lock(mutex_);
+  
+  if (queue_.size() == 0) {
+    return Task();
+  }
 
   Task task = queue_.top();
   queue_.pop();
@@ -81,16 +93,27 @@ Task ConcurrentTaskRunner::NextTask() {
 }
 
 bool ConcurrentTaskRunner::CanWakeUp() {
-  LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
-
+  LOG(LogLevel::INFO) << "[" << label() << "] " << __func__;
   {
     std::unique_lock<std::mutex> lock(mutex_);
     cv_.wait(lock, [&](){
-        return running_ && !queue_.empty();
+        LOG(LogLevel::INFO) << "[" << label() << "] " << __func__;
+        return IsRunning() && !queue_.empty();
     });
-    lock.unlock();
   }
   return true;
+}
+
+bool ConcurrentTaskRunner::CanWakeUp(uint64_t id) {
+  LOG(LogLevel::INFO) << "[" << label() << "] " << __func__ << " - before id : " << id;
+  {
+    std::unique_lock<std::mutex> lock(mutex_);
+    cv_.wait(lock, [&](){
+        return !IsRunning() || !queue_.empty();
+    });
+    LOG(LogLevel::INFO) << "[" << label() << "] " << __func__ << " - after id : " << id;
+  }
+  return IsRunning();
 }
 
 }  // namespace runner

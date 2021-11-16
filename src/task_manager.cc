@@ -54,7 +54,7 @@ void TaskManager::WaitForTerminateTaskRunner(const std::string& label) {
 
 void TaskManager::WaitForTerminateAllTaskRunner() {
   auto iter = runner_map_.begin();
-  while (!runner_map_.empty()) {
+  while (iter != runner_map_.end()) {
     const std::string label = iter->first;
     WaitForTerminateTaskRunner(label);
 
@@ -68,6 +68,10 @@ void TaskManager::StopRunner(const std::string& label) {
   }
 
   TaskRunnerProxy* runner = runner_map_.at(label).get();
+  if (!runner->IsRunning()) {
+    return;
+  }
+
   runner->StopRunner();
 }
 

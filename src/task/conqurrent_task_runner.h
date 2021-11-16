@@ -36,6 +36,7 @@ class ConcurrentTaskRunner final : public TaskRunnerProxy {
   void WiatForTerminateWorkers() override;
 
   std::vector<uint64_t> WorkersIdLists() override;
+  bool IsRunning() override;
 
   // WokerThread::Delegate
   void OnStartWorker() override;
@@ -47,6 +48,7 @@ class ConcurrentTaskRunner final : public TaskRunnerProxy {
 
   Task NextTask() override;
   bool CanWakeUp() override;
+  bool CanWakeUp(uint64_t id) override;
 
  private:
   std::unique_ptr<TaskExecutorPool> executor_pool_;

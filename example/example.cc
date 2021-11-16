@@ -6,7 +6,7 @@
  */
 
 #include <iostream>
-#include "base/time.h"
+#include <mutex>
 
 // #include "task/sequenced_task_runner.h"
 
@@ -61,20 +61,24 @@
 #include "task/task_dispatcher.h"
 
 runner::TaskManager manager;
+std::mutex m;
 
 void TestFunc() {
+  m.lock();
   static uint32_t count = 0;
   std::cout << __func__ << " - count : " << count << " / " << runner::Time::InNanosecond() << std::endl;
 
   ++count;
 
-  if (count < 100) {
+  if (count < 50) {
     runner::TaskDispatcher* dispatcher = manager.GetTaskDispatcher();
     runner::TimeTick delay = runner::TimeTick::FromMilliseconds(100);
     dispatcher->PostDelayTask("test", TestFunc, delay);
   } else {
     manager.StopAllRunner();
   }
+  
+  m.unlock();
 }
 
 int main() {

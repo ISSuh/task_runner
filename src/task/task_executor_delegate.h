@@ -21,6 +21,7 @@ class TaskExecutorDelegate {
 
   virtual bool CanRunning() = 0;
   virtual bool CanWakeUp() = 0;
+  virtual bool CanWakeUp(uint64_t id) {};
 
   virtual Task NextTask() = 0;
 };

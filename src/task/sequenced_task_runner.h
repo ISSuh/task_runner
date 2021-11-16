@@ -36,6 +36,7 @@ class SequencedTaskRunner final : public TaskRunnerProxy {
   void WiatForTerminateWorkers() override;
 
   std::vector<uint64_t> WorkersIdLists() override;
+  bool IsRunning() override;
 
   // WokerThread::Delegate
   void OnStartWorker() override;

@@ -15,6 +15,7 @@
 namespace runner {
 
 struct Task {
+  Task() = default;
   Task(std::function<void()> callback, TimeTick delay)
     : delay(delay), callback(callback) {}
   ~Task() = default;

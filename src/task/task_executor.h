@@ -23,6 +23,7 @@ class TaskExecutor {
   explicit TaskExecutor(TaskRunnerProxy* task_runner_proxy);
   virtual ~TaskExecutor();
 
+  void Stop();
   void Join();
   uint64_t GetWokerId() const;
 
@@ -33,9 +34,9 @@ class TaskExecutor {
   void Work();
   void TerminateWorker();
 
-  std::unique_ptr<std::thread> worker_;
+  std::thread worker_;
   uint64_t id_;
-  std::atomic_bool running_;
+  bool running_;
 
   TaskExecutorDelegate* delegate_;
 };

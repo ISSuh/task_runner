@@ -40,6 +40,7 @@ class TaskRunnerProxy : public TaskRunner,
   virtual void StopRunner() = 0;
   virtual void WiatForTerminateWorkers() = 0;
   virtual std::vector<uint64_t> WorkersIdLists() = 0;
+  virtual bool IsRunning() = 0;
 
   std::string label() const;
 

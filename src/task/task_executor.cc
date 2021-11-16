@@ -11,25 +11,25 @@
 namespace runner {
 
 TaskExecutor::TaskExecutor(TaskRunnerProxy* task_runner_proxy)
-  : worker_(new std::thread(&TaskExecutor::ExcuteWork, this)),
-    id_(std::hash<std::thread::id>{}(worker_->get_id())),
+  : worker_(std::thread(&TaskExecutor::ExcuteWork, this)),
+    id_(std::hash<std::thread::id>{}(worker_.get_id())),
     running_(true),
     delegate_(task_runner_proxy) {
 }
 
-TaskExecutor::~TaskExecutor() = default;
+TaskExecutor::~TaskExecutor() {
+  LOG(INFO) << __func__ << " - " << worker_.joinable() << " / " << id_;
+}
+
+void TaskExecutor::Stop() {
+  running_ = false;
+}
 
 void TaskExecutor::Join() {
   LOG(LogLevel::TRACE) << __func__;
-  if (!running_.load()) {
-    return;
+  if (worker_.joinable()) {
+    worker_.join();
   }
-
-  if (worker_->joinable()) {
-    worker_->join();
-  }
-
-  worker_.reset();
 }
 
 uint64_t TaskExecutor::GetWokerId() const {
@@ -37,20 +37,28 @@ uint64_t TaskExecutor::GetWokerId() const {
 }
 
 void TaskExecutor::ExcuteWork() {
-  LOG(LogLevel::INFO) << __func__;
+  LOG(LogLevel::INFO) << __func__ << " - start " << id_;
   StartWorker();
   Work();
   TerminateWorker();
+  LOG(LogLevel::INFO) << __func__ << " - end " << id_;
 }
 
 void TaskExecutor::StartWorker() {
-  running_.store(true);
+  running_ = true;
   delegate_->OnStartWorker();
 }
 
 void TaskExecutor::Work() {
-  while (delegate_->CanRunning() && delegate_->CanWakeUp()) {
+  while (delegate_->CanRunning()) {
+    if (!delegate_->CanWakeUp(id_)) {
+      break;
+    }
+
     Task task = delegate_->NextTask();
+    if (!task.callback) {
+      continue;
+    }
 
     delegate_->OnStartTask();
     task.callback();
@@ -60,7 +68,7 @@ void TaskExecutor::Work() {
 
 void TaskExecutor::TerminateWorker() {
   delegate_->OnTerminateWorker();
-  running_.store(false);
+  running_ = false;
 }
 
 }  // namespace runner

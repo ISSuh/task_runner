@@ -16,7 +16,6 @@ SequencedTaskRunner::SequencedTaskRunner(const std::string& label)
 }
 
 SequencedTaskRunner::~SequencedTaskRunner() {
-  StopRunner();
 }
 
 void SequencedTaskRunner::PostDelayTask(std::function<void()> task_callback, TimeTick delay) {
@@ -28,7 +27,6 @@ void SequencedTaskRunner::PostDelayTask(std::function<void()> task_callback, Tim
 
 void SequencedTaskRunner::StopRunner() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
-  std::lock_guard<std::mutex> lock(mutex_);
   running_ = false;
   cv_.notify_all();
 }
@@ -47,6 +45,10 @@ std::vector<uint64_t> SequencedTaskRunner::WorkersIdLists() {
     return std::vector<uint64_t>();
   }
   return {executor_->GetWokerId()};
+}
+
+bool SequencedTaskRunner::IsRunning() {
+  return running_;
 }
 
 void SequencedTaskRunner::OnStartWorker() {
@@ -86,7 +88,7 @@ bool SequencedTaskRunner::CanWakeUp() {
   {
     std::unique_lock<std::mutex> lock(mutex_);
     cv_.wait(lock, [&](){
-        return running_ && !queue_.empty();
+        return IsRunning() && !queue_.empty();
     });
     lock.unlock();
   }
