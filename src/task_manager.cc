@@ -20,8 +20,10 @@ TaskManager::TaskManager()
 }
 
 TaskManager::~TaskManager() {
-  StopAllRunner();
-  WaitForTerminateAllTaskRunner();
+  if (!runner_map_.empty()) {
+    StopAllRunner();
+    WaitForTerminateAllTaskRunner();
+  }
 }
 
 TaskRunner* TaskManager::CreateTaskRunner(const std::string& label, TaskRunner::Type type, size_t num) {
@@ -43,32 +45,35 @@ TaskDispatcher* TaskManager::GetTaskDispatcher() {
 void TaskManager::WaitForTerminateTaskRunner(const std::string& label) {
   if (runner_map_.find(label) == runner_map_.end()) {
     LOG(ERROR) << __func__ << " - Invalid label : " << label;
+    return;
   }
 
   TaskRunnerProxy* runner = runner_map_.at(label).get();
-  runner->WiatForTerminateWorkers();
+  if (!runner || !runner->IsRunning()) {
+    return;
+  }
 
-  runner_map_.at(label).reset(nullptr);
-  runner_map_.erase(label);
+  runner->WiatForTerminateWorkers();
 }
 
 void TaskManager::WaitForTerminateAllTaskRunner() {
-  auto iter = runner_map_.begin();
-  while (iter != runner_map_.end()) {
+  for (auto iter = runner_map_.begin() ; iter != runner_map_.end();) {
     const std::string label = iter->first;
     WaitForTerminateTaskRunner(label);
 
-    ++iter;
+    iter->second.reset(nullptr);
+    runner_map_.erase(iter++);
   }
 }
 
 void TaskManager::StopRunner(const std::string& label) {
   if (runner_map_.find(label) == runner_map_.end()) {
     LOG(ERROR) << __func__ << " - Invalid label : " << label;
+    return;
   }
 
   TaskRunnerProxy* runner = runner_map_.at(label).get();
-  if (!runner->IsRunning()) {
+  if (!runner || !runner->IsRunning()) {
     return;
   }
 
@@ -102,7 +107,9 @@ TaskRunner* TaskManager::CreateSequencedTaskRunner(const std::string& label) {
 
   LOG(INFO) << __func__ << " - Create new Sequenced Runner : " << label;
 
-  std::unique_ptr<TaskRunnerProxy> runner = std::unique_ptr<TaskRunnerProxy>(new SequencedTaskRunner(label));
+  std::unique_ptr<TaskRunnerProxy> runner =
+    std::unique_ptr<TaskRunnerProxy>(new SequencedTaskRunner(label));
+
   runner_map_.insert({label, std::move(runner)});
   return dynamic_cast<TaskRunner*>(runner_map_.at(label).get());
 }
@@ -114,7 +121,9 @@ TaskRunner* TaskManager::CreateConqurrentTaskRunner(const std::string& label, si
 
   LOG(INFO) << __func__ << " - Create new Conqurrent Runner : " << label;
 
-  std::unique_ptr<TaskRunnerProxy> runner = std::unique_ptr<TaskRunnerProxy>(new ConcurrentTaskRunner(label, num));
+  std::unique_ptr<TaskRunnerProxy> runner =
+    std::unique_ptr<TaskRunnerProxy>(new ConcurrentTaskRunner(label, num));
+
   runner_map_.insert({label, std::move(runner)});
   return dynamic_cast<TaskRunner*>(runner_map_.at(label).get());
 }

@@ -8,6 +8,7 @@
 #define TASK_CONCURRENT_TASK_RUNNER_H_
 
 #include <vector>
+#include <map>
 #include <string>
 #include <memory>
 #include <queue>
@@ -15,7 +16,7 @@
 #include <condition_variable>
 
 #include "task/task_runner.h"
-#include "task/task_executor_pool.h"
+#include "task/task_executor.h"
 #include "base/time.h"
 
 namespace runner {
@@ -39,19 +40,17 @@ class ConcurrentTaskRunner final : public TaskRunnerProxy {
   bool IsRunning() override;
 
   // WokerThread::Delegate
-  void OnStartWorker() override;
-  void OnTerminateWorker() override;
+  void OnStartWorker(uint64_t id) override;
+  void OnTerminateWorker(uint64_t id) override;
   void OnStartTask() override;
   void OnDidFinishTask() override;
 
-  bool CanRunning() override;
-
   Task NextTask() override;
-  bool CanWakeUp() override;
   bool CanWakeUp(uint64_t id) override;
 
  private:
-  std::unique_ptr<TaskExecutorPool> executor_pool_;
+  size_t number_of_executor_;
+  std::map<uint64_t, std::unique_ptr<TaskExecutor>> executors_;
 
   using TaskQueue = std::priority_queue<Task>;
   TaskQueue queue_;

@@ -39,15 +39,13 @@ class SequencedTaskRunner final : public TaskRunnerProxy {
   bool IsRunning() override;
 
   // WokerThread::Delegate
-  void OnStartWorker() override;
-  void OnTerminateWorker() override;
+  void OnStartWorker(uint64_t id) override;
+  void OnTerminateWorker(uint64_t id) override;
   void OnStartTask() override;
   void OnDidFinishTask() override;
 
-  bool CanRunning() override;
-
   Task NextTask() override;
-  bool CanWakeUp() override;
+  bool CanWakeUp(uint64_t id) override;
 
  private:
   std::unique_ptr<TaskExecutor> executor_;

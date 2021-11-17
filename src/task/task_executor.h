@@ -23,7 +23,6 @@ class TaskExecutor {
   explicit TaskExecutor(TaskRunnerProxy* task_runner_proxy);
   virtual ~TaskExecutor();
 
-  void Stop();
   void Join();
   uint64_t GetWokerId() const;
 

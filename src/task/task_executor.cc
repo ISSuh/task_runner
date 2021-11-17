@@ -17,13 +17,7 @@ TaskExecutor::TaskExecutor(TaskRunnerProxy* task_runner_proxy)
     delegate_(task_runner_proxy) {
 }
 
-TaskExecutor::~TaskExecutor() {
-  LOG(INFO) << __func__ << " - " << worker_.joinable() << " / " << id_;
-}
-
-void TaskExecutor::Stop() {
-  running_ = false;
-}
+TaskExecutor::~TaskExecutor() = default;
 
 void TaskExecutor::Join() {
   LOG(LogLevel::TRACE) << __func__;
@@ -37,24 +31,18 @@ uint64_t TaskExecutor::GetWokerId() const {
 }
 
 void TaskExecutor::ExcuteWork() {
-  LOG(LogLevel::INFO) << __func__ << " - start " << id_;
   StartWorker();
   Work();
   TerminateWorker();
-  LOG(LogLevel::INFO) << __func__ << " - end " << id_;
 }
 
 void TaskExecutor::StartWorker() {
   running_ = true;
-  delegate_->OnStartWorker();
+  delegate_->OnStartWorker(id_);
 }
 
 void TaskExecutor::Work() {
-  while (delegate_->CanRunning()) {
-    if (!delegate_->CanWakeUp(id_)) {
-      break;
-    }
-
+  while (delegate_->CanWakeUp(id_)) {
     Task task = delegate_->NextTask();
     if (!task.callback) {
       continue;
@@ -67,7 +55,7 @@ void TaskExecutor::Work() {
 }
 
 void TaskExecutor::TerminateWorker() {
-  delegate_->OnTerminateWorker();
+  delegate_->OnTerminateWorker(id_);
   running_ = false;
 }
 

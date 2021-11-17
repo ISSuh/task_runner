@@ -11,25 +11,27 @@ namespace runner {
 
 ConcurrentTaskRunner::ConcurrentTaskRunner(const std::string& label, size_t num)
   : TaskRunnerProxy(label),
-    executor_pool_(new TaskExecutorPool(this, num)),
+    number_of_executor_(num),
     running_(true) {
+  for (size_t i = 0 ; i < number_of_executor_ ; ++i) {
+      std::unique_ptr<TaskExecutor> executor(new TaskExecutor(this));
+      executors_.insert({executor->GetWokerId(), std::move(executor)});
+  }
 }
 
-ConcurrentTaskRunner::~ConcurrentTaskRunner() {
-}
+ConcurrentTaskRunner::~ConcurrentTaskRunner() = default;
 
 void ConcurrentTaskRunner::PostDelayTask(std::function<void()> task_callback, TimeTick delay) {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
-  std::lock_guard<std::mutex> lock(mutex_);
-  queue_.push(Task(task_callback, delay));
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    queue_.push(Task(task_callback, delay));
+  }
   cv_.notify_one();
 }
 
 void ConcurrentTaskRunner::StopRunner() {
   LOG(LogLevel::INFO) << "[" << label() << "] " << __func__;
-
-  executor_pool_->StopWorkers();
-
   {
     std::lock_guard<std::mutex> lock(mutex_);
     running_ = false;
@@ -39,30 +41,35 @@ void ConcurrentTaskRunner::StopRunner() {
 
 void ConcurrentTaskRunner::WiatForTerminateWorkers() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
-  if (executor_pool_ == nullptr) {
-    return;
+  for (auto iter = executors_.begin() ; iter != executors_.end();) {
+    TaskExecutor* executor = iter->second.get();
+    executor->Join();
+
+    iter->second.reset(nullptr);
+    executors_.erase(iter++);
   }
-  executor_pool_->WiatForTerminateWorkers();
 }
 
 std::vector<uint64_t> ConcurrentTaskRunner::WorkersIdLists() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
-  if (executor_pool_ == nullptr) {
-    return std::vector<uint64_t>();
+  std::vector<uint64_t> id_lists;
+  for (auto& excutor : executors_) {
+    uint64_t id = excutor.first;
+    id_lists.emplace_back(id);
   }
-  return executor_pool_->WorkersIdLists();
+  return id_lists;
 }
 
 bool ConcurrentTaskRunner::IsRunning() {
   return running_;
 }
 
-void ConcurrentTaskRunner::OnStartWorker() {
-  LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
+void ConcurrentTaskRunner::OnStartWorker(uint64_t id) {
+  LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__ << " - id : " << id;
 }
 
-void ConcurrentTaskRunner::OnTerminateWorker() {
-  LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
+void ConcurrentTaskRunner::OnTerminateWorker(uint64_t id) {
+  LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__ << " - id : " << id;
 }
 
 void ConcurrentTaskRunner::OnStartTask() {
@@ -73,16 +80,11 @@ void ConcurrentTaskRunner::OnDidFinishTask() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
 }
 
-bool ConcurrentTaskRunner::CanRunning() {
-  LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
-  return running_;
-}
-
 Task ConcurrentTaskRunner::NextTask() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
   std::lock_guard<std::mutex> lock(mutex_);
   
-  if (queue_.size() == 0) {
+  if (queue_.empty()) {
     return Task();
   }
 
@@ -92,26 +94,13 @@ Task ConcurrentTaskRunner::NextTask() {
   return task;
 }
 
-bool ConcurrentTaskRunner::CanWakeUp() {
-  LOG(LogLevel::INFO) << "[" << label() << "] " << __func__;
-  {
-    std::unique_lock<std::mutex> lock(mutex_);
-    cv_.wait(lock, [&](){
-        LOG(LogLevel::INFO) << "[" << label() << "] " << __func__;
-        return IsRunning() && !queue_.empty();
-    });
-  }
-  return true;
-}
-
 bool ConcurrentTaskRunner::CanWakeUp(uint64_t id) {
-  LOG(LogLevel::INFO) << "[" << label() << "] " << __func__ << " - before id : " << id;
+  LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__ << " - id : " << id;
   {
     std::unique_lock<std::mutex> lock(mutex_);
     cv_.wait(lock, [&](){
         return !IsRunning() || !queue_.empty();
     });
-    LOG(LogLevel::INFO) << "[" << label() << "] " << __func__ << " - after id : " << id;
   }
   return IsRunning();
 }

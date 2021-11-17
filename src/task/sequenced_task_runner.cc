@@ -15,8 +15,7 @@ SequencedTaskRunner::SequencedTaskRunner(const std::string& label)
     running_(true) {
 }
 
-SequencedTaskRunner::~SequencedTaskRunner() {
-}
+SequencedTaskRunner::~SequencedTaskRunner() = default;
 
 void SequencedTaskRunner::PostDelayTask(std::function<void()> task_callback, TimeTick delay) {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
@@ -51,12 +50,12 @@ bool SequencedTaskRunner::IsRunning() {
   return running_;
 }
 
-void SequencedTaskRunner::OnStartWorker() {
-  LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
+void SequencedTaskRunner::OnStartWorker(uint64_t id) {
+  LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__ << " - id : " << id;
 }
 
-void SequencedTaskRunner::OnTerminateWorker() {
-  LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
+void SequencedTaskRunner::OnTerminateWorker(uint64_t id) {
+  LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__ << " - id : " << id;
 }
 
 void SequencedTaskRunner::OnStartTask() {
@@ -67,14 +66,13 @@ void SequencedTaskRunner::OnDidFinishTask() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
 }
 
-bool SequencedTaskRunner::CanRunning() {
-  LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
-  return running_;
-}
-
 Task SequencedTaskRunner::NextTask() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
   std::lock_guard<std::mutex> lock(mutex_);
+
+  if (queue_.empty()) {
+    return Task();
+  }
 
   Task task = queue_.top();
   queue_.pop();
@@ -82,17 +80,16 @@ Task SequencedTaskRunner::NextTask() {
   return task;
 }
 
-bool SequencedTaskRunner::CanWakeUp() {
-  LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
-
+bool SequencedTaskRunner::CanWakeUp(uint64_t id) {
+  LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__ << " - id : " << id;
   {
     std::unique_lock<std::mutex> lock(mutex_);
     cv_.wait(lock, [&](){
-        return IsRunning() && !queue_.empty();
+        return !IsRunning() && !queue_.empty();
     });
     lock.unlock();
   }
-  return true;
+  return IsRunning();
 }
 
 }  // namespace runner
