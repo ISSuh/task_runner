@@ -37,8 +37,15 @@ void TestFunc() {
   m.unlock();
 }
 
+void CallbackTest(int t) {
+  std::cout << __func__ << " - " << t << std::endl;
+}
+
 int main() {
   std::cout << "Hello World!\n";
+
+  runner::Callback test = runner::Bind(&CallbackTest, 6);
+
   runner::TaskRunner* test_runner = manager.CreateTaskRunner("test", runner::TaskRunner::Type::CONCURRENT, 5);
   test_runner->PostTask(TestFunc);
 
