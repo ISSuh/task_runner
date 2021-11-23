@@ -22,7 +22,7 @@
 namespace runner {
 
 template <typename R, typename... Args>
-class Callback;
+class TaskCallback;
 
 // Packs a list of types to hold them in a single type.
 template <typename... Types>
@@ -258,20 +258,42 @@ using MakeBindStateType =
 
 // Invoker<>
 // See description at the top of the file.
-template <typename T, T... vals>
+template<typename T, T... Ints>
 struct integer_sequence {
-  // static_assert(is_integral_v<T>,
-  //   "integer_sequence<T, I...> requires T to be an integral type");
+  typedef T value_type;
+  static constexpr std::size_t size() { return sizeof...(Ints); }
+};
 
-  using value_type = T;
+template<std::size_t... Ints>
+using index_sequence = integer_sequence<std::size_t, Ints...>;
 
-  static constexpr size_t size() noexcept {  
-      return (sizeof...(vals));
+template<typename T, std::size_t N, T... Is>
+struct make_integer_sequence : make_integer_sequence<T, N-1, N-1, Is...> {};
+
+template<typename T, T... Is>
+struct make_integer_sequence<T, 0, Is...> : integer_sequence<T, Is...> {};
+
+template<std::size_t N>
+using make_index_sequence = make_integer_sequence<std::size_t, N>;
+
+template<typename... T>
+using index_sequence_for = make_index_sequence<sizeof...(T)>;
+
+template <typename>
+struct BindUnwrapTraits {
+  template <typename T>
+  static T&& Unwrap(T&& o) {
+    return std::forward<T>(o);
   }
 };
 
-template <size_t... Vals>
-using index_sequence = integer_sequence<size_t, Vals...>;
+template <typename T>
+using Unwrapper = BindUnwrapTraits<decay_t<T>>;
+
+template <typename T>
+T Unwrap(T&& o) {
+  return Unwrapper<T>::Unwrap(std::forward<T>(o));
+}
 
 template <typename StorageType, typename UnboundRunType>
 struct Invoker;
@@ -287,7 +309,7 @@ struct Invoker<StorageType, R(UnboundArgs...)> {
         std::tuple_size<decltype(storage->bound_args_)>::value;
     return RunImpl(storage->functor_,
                    storage->bound_args_,
-                   num_bound_args,
+                   make_index_sequence<num_bound_args>(),
                    std::forward<UnboundArgs>(unbound_args)...);
   }
 
@@ -299,8 +321,6 @@ struct Invoker<StorageType, R(UnboundArgs...)> {
                           UnboundArgs&&... unbound_args) {
     static constexpr bool is_method = MakeFunctorTraits<Functor>::is_method;
 
-    using DecayedArgsTuple = decay_t<BoundArgsTuple>;
-
     return InvokeHelper<R>::TryInvoke(
         std::forward<Functor>(functor),
         Unwrap(std::get<indices>(std::forward<BoundArgsTuple>(bound)))...,
@@ -308,10 +328,9 @@ struct Invoker<StorageType, R(UnboundArgs...)> {
   }
 };
 
-template <template <typename> class CallbackT,
-          typename Functor,
+template <typename Functor,
           typename... Args>
-auto BindImpl(Functor&& functor, Args&&... args) -> typename FunctorTraits<Functor>::return_type {
+TaskCallback<MakeUnboundRunType<Functor, Args...>> BindImpl(Functor&& functor, Args&&... args) {
   // This block checks if each |args| matches to the corresponding params of the
   // target function. This check does not affect the behavior of Bind, but its
   // error message should be more readable.
@@ -323,7 +342,7 @@ auto BindImpl(Functor&& functor, Args&&... args) -> typename FunctorTraits<Funct
   using BindState = MakeBindStateType<Functor, Args...>;
   using UnboundRunType = MakeUnboundRunType<Functor, Args...>;
   using Invoker = Invoker<BindState, UnboundRunType>;
-  using CallbackType = CallbackT<UnboundRunType>;
+  using CallbackType = TaskCallback<UnboundRunType>;
 
   // Store the invoke func into PolymorphicInvoke before casting it to
   // InvokeFuncStorage, so that we can ensure its type matches to
@@ -338,8 +357,13 @@ auto BindImpl(Functor&& functor, Args&&... args) -> typename FunctorTraits<Funct
 }
 
 template <typename Functor, typename... Args>
-Callback<MakeUnboundRunType<Functor, Args...>> Bind(Functor&& functor, Args&&... args) {
-  return BindImpl<Callback>(std::forward<Functor>(functor), std::forward<Args>(args)...);
+TaskCallback<MakeUnboundRunType<Functor, Args...>> Bind(Functor&& functor, Args&&... args) {
+  return BindImpl(std::forward<Functor>(functor), std::forward<Args>(args)...);
+}
+
+template <typename Signature>
+TaskCallback<Signature> BindRepeating(TaskCallback<Signature> closure) {
+  return closure;
 }
 
 }  // namespace runner

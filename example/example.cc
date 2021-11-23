@@ -41,13 +41,30 @@ void CallbackTest(int t) {
   std::cout << __func__ << " - " << t << std::endl;
 }
 
+class TestClass {
+ public:
+  void Print(int a, int b) {
+    std::cout << __func__ << " - " << a << " / " << b << std::endl;
+  }
+};
+
 int main() {
   std::cout << "Hello World!\n";
 
-  runner::Callback test = runner::Bind(&CallbackTest, 6);
+  auto test1 = runner::Bind(&CallbackTest, 1);
+  test1.Run();
 
-  runner::TaskRunner* test_runner = manager.CreateTaskRunner("test", runner::TaskRunner::Type::CONCURRENT, 5);
-  test_runner->PostTask(TestFunc);
+  TestClass testclass;
+  auto test2 = runner::Bind(&TestClass::Print, &testclass, 1, 2);
+  test2.Run();
 
-  manager.WaitForTerminateAllTaskRunner();
+  // auto test3 = runner::Bind([](int a){
+  //   std::cout << __func__ << " - " << a << std::endl;
+  // }, 1);
+  // test3.Run();
+
+  // runner::TaskRunner* test_runner = manager.CreateTaskRunner("test", runner::TaskRunner::Type::CONCURRENT, 5);
+  // test_runner->PostTask(TestFunc);
+
+  // manager.WaitForTerminateAllTaskRunner();
 }

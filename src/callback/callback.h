@@ -47,27 +47,27 @@ class CallbackBase {
 };
 
 template <typename R, typename... Args>
-class Callback<R(Args...)> : public CallbackBase {
+class TaskCallback<R(Args...)> : public CallbackBase {
  public:
   using RunType = R(Args...);
   using PolymorphicInvoke = R(*)(BindStateBase*, PassingType<Args>...);
 
-  constexpr Callback() = default;
-  Callback(std::nullptr_t) = delete;
+  constexpr TaskCallback() = default;
+  TaskCallback(std::nullptr_t) = delete;
 
-  explicit Callback(BindStateBase* bind_state)
+  explicit TaskCallback(BindStateBase* bind_state)
       : CallbackBase(bind_state) {}
 
-  Callback(const Callback&) = delete;
-  Callback& operator=(const Callback&) = delete;
+  TaskCallback(const TaskCallback&) = delete;
+  TaskCallback& operator=(const TaskCallback&) = delete;
 
-  Callback(Callback&&) noexcept = default;
-  Callback& operator=(Callback&&) noexcept = default;
+  TaskCallback(TaskCallback&&) noexcept = default;
+  TaskCallback& operator=(TaskCallback&&) noexcept = default;
 
   R Run(Args... args) const & {
-  }
-
-  R Run(Args... args) && {
+    PolymorphicInvoke f =
+        reinterpret_cast<PolymorphicInvoke>(this->polymorphic_invoke());
+    return f(this->bind_state_, std::forward<Args>(args)...);
   }
 };
 
