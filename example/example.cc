@@ -46,23 +46,27 @@ class TestClass {
   void Print(int a, int b) {
     std::cout << __func__ << " - " << a << " / " << b << std::endl;
   }
+
+  TestClass* pointer = this;
 };
 
 int main() {
   std::cout << "Hello World!\n";
 
-  auto test1 = runner::Bind(&CallbackTest, 1);
-  test1.Run();
+  // auto test1 = runner::Bind(&CallbackTest, 1);
+  // test1.Run();
 
   TestClass testclass;
-  auto test2 = runner::Bind(&TestClass::Print, &testclass, 1, 2);
-  test2.Run();
+  auto test2 = runner::Bind(&TestClass::Print, testclass.pointer, 1);
+  test2.Run(2);
 
-  // auto test3 = runner::Bind([](int a){
-  //   std::cout << __func__ << " - " << a << std::endl;
-  // }, 1);
-  // test3.Run();
+  auto test3 = runner::Bind([](int a) -> int {
+    std::cout << __func__ << " - " << a << std::endl;
+    return 1;
+  }, 1);
 
+  std::cout << "test3.Run() : " << test3.Run() << std::endl;
+  
   // runner::TaskRunner* test_runner = manager.CreateTaskRunner("test", runner::TaskRunner::Type::CONCURRENT, 5);
   // test_runner->PostTask(TestFunc);
 

@@ -8,7 +8,6 @@
 #define CALLBACK_CALLBACK_H_
 
 #include "callback/bind.h"
-#include "callback/callback_traits.h"
 
 namespace runner {
 
@@ -22,15 +21,12 @@ class CallbackBase {
  protected:
   using InvokeFuncStorage = BindStateBase::InvokeFuncStorage;
 
-  // Returns true if this callback equals |other|. |other| may be null.
   bool EqualsInternal(const CallbackBase& other) const {
     return bind_state_ == other.bind_state_;
   }
 
-  CallbackBase() = default;
+  CallbackBase() : bind_state_(nullptr) {}
 
-  // Allow initializing of |bind_state_| via the constructor to avoid default
-  // initialization of the scoped_refptr.
   explicit inline CallbackBase(BindStateBase* bind_state)
     : bind_state_(bind_state) {}
 
@@ -38,9 +34,6 @@ class CallbackBase {
     return bind_state_->polymorphic_invoke_;
   }
 
-  // Force the destructor to be instantiated inside this translation unit so
-  // that our subclasses will not get inlined versions.  Avoids more template
-  // bloat.
   ~CallbackBase() = default;
 
   BindStateBase* bind_state_;
