@@ -17,7 +17,7 @@ namespace runner {
 
 struct Task {
   Task() = default;
-  Task(TaskCallback tasl_callback, TimeTick delay)
+  Task(const TaskCallback& tasl_callback, TimeTick delay)
     : callback(tasl_callback), delay(delay) {}
   ~Task() = default;
 

@@ -25,10 +25,10 @@ class TaskDispatcher {
   ~TaskDispatcher();
 
   void PostTask(const std::string& task_runner_label,
-                TaskCallback task_callback);
+                const TaskCallback& task_callback);
 
   void PostDelayTask(const std::string& task_runner_label,
-                TaskCallback task_callback, TimeTick delay);
+                const TaskCallback& task_callback, TimeTick delay);
 
  private:
   TaskManager* manager_;

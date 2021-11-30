@@ -9,7 +9,16 @@
 
 namespace runner {
 
+static bool active_logging = false;
 static LogLevel system_log_level = LogLevel::INFO;
+
+void ActiveLogging() {
+  active_logging = true;
+}
+
+void DeactiveLogging() {
+  active_logging = false;
+}
 
 void SetLogLevel(LogLevel level) {
   system_log_level = level;
@@ -34,7 +43,7 @@ LOG::~LOG() {
 }
 
 bool LOG::CanPrintLog() {
-  return log_level_ <= system_log_level;
+  return active_logging && log_level_ <= system_log_level;
 }
 
 LOG::LogColorCode LOG::SelectLogColor(LogLevel level) {

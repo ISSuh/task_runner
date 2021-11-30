@@ -23,7 +23,7 @@ ConcurrentTaskRunner::ConcurrentTaskRunner(const std::string& label, size_t num)
 
 ConcurrentTaskRunner::~ConcurrentTaskRunner() = default;
 
-void ConcurrentTaskRunner::PostDelayTask(TaskCallback task_callback, TimeTick delay) {
+void ConcurrentTaskRunner::PostDelayTask(const TaskCallback& task_callback, TimeTick delay) {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
   {
     std::lock_guard<std::mutex> lock(mutex_);

@@ -30,7 +30,7 @@ class SequencedTaskRunner final : public TaskRunnerProxy {
   virtual ~SequencedTaskRunner();
 
   // TaksRunner
-  void PostDelayTask(TaskCallback task_callback, TimeTick delay) override;
+  void PostDelayTask(const TaskCallback& task_callback, TimeTick delay) override;
 
   // TaksRunnerProxy
   void StopRunner() override;

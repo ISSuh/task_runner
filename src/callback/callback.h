@@ -17,9 +17,6 @@ class BindStateBase;
 
 class CallbackBase {
  public:
-  inline CallbackBase(CallbackBase&& c) noexcept
-    : bind_state_(c.bind_state_) {}
-
   bool is_null() const { return !bind_state_; }
   explicit operator bool() const { return !is_null(); }
 
@@ -27,14 +24,15 @@ class CallbackBase {
     bind_state_ = c.bind_state_;
   }
 
-  CallbackBase(CallbackBase&& c) noexcept = default;
+  CallbackBase(CallbackBase&& c) noexcept
+    : bind_state_(c.bind_state_) {}
 
   CallbackBase& operator=(const CallbackBase& c) {
     bind_state_ = c.bind_state_;
     return *this;
   }
 
-  CallbackBase& CallbackBase::operator=(CallbackBase&& c) noexcept = default;
+  CallbackBase& operator=(CallbackBase&& c) noexcept = default;
 
  protected:
   using InvokeFuncStorage = BindStateBase::InvokeFuncStorage;

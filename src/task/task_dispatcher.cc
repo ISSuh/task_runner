@@ -17,12 +17,12 @@ TaskDispatcher::TaskDispatcher(TaskManager* manager)
 TaskDispatcher::~TaskDispatcher() = default;
 
 void TaskDispatcher::PostTask(const std::string& label,
-              TaskCallback task_callback) {
+              const TaskCallback& task_callback) {
   PostDelayTask(label, task_callback, TimeTick());
 }
 
 void TaskDispatcher::PostDelayTask(const std::string& label,
-              TaskCallback task_callback, TimeTick delay) {
+              const TaskCallback& task_callback, TimeTick delay) {
   TaskRunner* runner = manager_->GetTaskRunner(label);
   if (runner == nullptr) {
     return;

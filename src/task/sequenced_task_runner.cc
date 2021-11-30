@@ -17,7 +17,7 @@ SequencedTaskRunner::SequencedTaskRunner(const std::string& label)
 
 SequencedTaskRunner::~SequencedTaskRunner() = default;
 
-void SequencedTaskRunner::PostDelayTask(TaskCallback task_callback, TimeTick delay) {
+void SequencedTaskRunner::PostDelayTask(const TaskCallback& task_callback, TimeTick delay) {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
   std::lock_guard<std::mutex> lock(mutex_);
   queue_.push(Task(task_callback, delay));
@@ -85,7 +85,7 @@ bool SequencedTaskRunner::CanWakeUp(uint64_t id) {
   {
     std::unique_lock<std::mutex> lock(mutex_);
     cv_.wait(lock, [&](){
-        return !IsRunning() && !queue_.empty();
+        return !IsRunning() || !queue_.empty();
     });
     lock.unlock();
   }
