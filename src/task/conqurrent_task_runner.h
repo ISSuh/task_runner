@@ -17,6 +17,7 @@
 
 #include "task/task_runner.h"
 #include "task/task_executor.h"
+#include "callback/callback.h"
 #include "base/time.h"
 
 namespace runner {
@@ -30,7 +31,7 @@ class ConcurrentTaskRunner final : public TaskRunnerProxy {
   virtual ~ConcurrentTaskRunner();
 
   // TaksRunner
-  void PostDelayTask(std::function<void()>, TimeTick delay) override;
+  void PostDelayTask(TaskCallback task_callback, TimeTick delay) override;
 
   // TaksRunnerProxy
   void StopRunner() override;

@@ -7,6 +7,8 @@
 #ifndef CALLBACK_CALLBACK_H_
 #define CALLBACK_CALLBACK_H_
 
+#include <utility>
+
 #include "callback/bind.h"
 
 namespace runner {
@@ -15,8 +17,24 @@ class BindStateBase;
 
 class CallbackBase {
  public:
+  inline CallbackBase(CallbackBase&& c) noexcept
+    : bind_state_(c.bind_state_) {}
+
   bool is_null() const { return !bind_state_; }
   explicit operator bool() const { return !is_null(); }
+
+  CallbackBase(const CallbackBase& c) {
+    bind_state_ = c.bind_state_;
+  }
+
+  CallbackBase(CallbackBase&& c) noexcept = default;
+
+  CallbackBase& operator=(const CallbackBase& c) {
+    bind_state_ = c.bind_state_;
+    return *this;
+  }
+
+  CallbackBase& CallbackBase::operator=(CallbackBase&& c) noexcept = default;
 
  protected:
   using InvokeFuncStorage = BindStateBase::InvokeFuncStorage;
@@ -30,32 +48,36 @@ class CallbackBase {
   explicit inline CallbackBase(BindStateBase* bind_state)
     : bind_state_(bind_state) {}
 
+  ~CallbackBase() = default;
+
   InvokeFuncStorage polymorphic_invoke() const {
     return bind_state_->polymorphic_invoke_;
   }
 
-  ~CallbackBase() = default;
 
   BindStateBase* bind_state_;
 };
 
 template <typename R, typename... Args>
-class TaskCallback<R(Args...)> : public CallbackBase {
+class Callback<R(Args...)> : public CallbackBase {
  public:
   using RunType = R(Args...);
   using PolymorphicInvoke = R(*)(BindStateBase*, PassingType<Args>...);
 
-  constexpr TaskCallback() = default;
-  TaskCallback(std::nullptr_t) = delete;
+  constexpr Callback() = default;
+  Callback(std::nullptr_t) = delete;
 
-  explicit TaskCallback(BindStateBase* bind_state)
+  explicit Callback(BindStateBase* bind_state)
       : CallbackBase(bind_state) {}
 
-  TaskCallback(const TaskCallback&) = delete;
-  TaskCallback& operator=(const TaskCallback&) = delete;
+  // explicit Callback(const Callback<RunType>& other)
+  //     : CallbackBase(std::move(other)) {}
 
-  TaskCallback(TaskCallback&&) noexcept = default;
-  TaskCallback& operator=(TaskCallback&&) noexcept = default;
+  Callback(const Callback&) = default;
+  Callback& operator=(const Callback&) = default;
+
+  Callback(Callback&&) noexcept = default;
+  Callback& operator=(Callback&&) noexcept = default;
 
   R Run(Args... args) const & {
     PolymorphicInvoke f =
@@ -63,6 +85,8 @@ class TaskCallback<R(Args...)> : public CallbackBase {
     return f(this->bind_state_, std::forward<Args>(args)...);
   }
 };
+
+using TaskCallback = Callback<void()>;
 
 }  // namespace runner
 

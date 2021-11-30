@@ -11,14 +11,12 @@
 
 namespace runner {
 
-TaskRunner::TaskRunner() {
-}
+TaskRunner::TaskRunner() = default;
 
-TaskRunner::~TaskRunner() {
-}
+TaskRunner::~TaskRunner() = default;
 
-void TaskRunner::PostTask(std::function<void()> task) {
-  PostDelayTask(task, TimeTick());
+void TaskRunner::PostTask(TaskCallback callback) {
+  PostDelayTask(callback, TimeTick());
 }
 
 TaskRunnerProxy::TaskRunnerProxy(const std::string& label)

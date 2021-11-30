@@ -32,6 +32,8 @@ TaskRunner* TaskManager::CreateTaskRunner(const std::string& label, TaskRunner::
     return CreateSequencedTaskRunner(label);
   case TaskRunner::Type::CONCURRENT:
     return CreateConqurrentTaskRunner(label, num);
+  default:
+    return nullptr;
   }
 }
 

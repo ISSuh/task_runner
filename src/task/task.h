@@ -11,17 +11,18 @@
 #include <functional>
 
 #include "base/time.h"
+#include "callback/callback.h"
 
 namespace runner {
 
 struct Task {
   Task() = default;
-  Task(std::function<void()> callback, TimeTick delay)
-    : delay(delay), callback(callback) {}
+  Task(TaskCallback tasl_callback, TimeTick delay)
+    : callback(tasl_callback), delay(delay) {}
   ~Task() = default;
 
+  TaskCallback callback;
   TimeTick delay;
-  std::function<void()> callback;
 
   bool operator<(const Task& s) const {
         return delay < s.delay;

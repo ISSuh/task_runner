@@ -22,7 +22,7 @@
 namespace runner {
 
 template <typename R, typename... Args>
-class TaskCallback;
+class Callback;
 
 template <typename Functor, typename... BoundArgs>
 struct BindTypeHelper {
@@ -49,7 +49,7 @@ class BindStateBase {
   InvokeFuncStorage polymorphic_invoke_;
 
  protected:
-  BindStateBase(InvokeFuncStorage polymorphic_invoke)
+  explicit BindStateBase(InvokeFuncStorage polymorphic_invoke)
     : polymorphic_invoke_(polymorphic_invoke) {}
 
   ~BindStateBase() = default;
@@ -182,11 +182,11 @@ struct Invoker<StorageType, R(UnboundArgs...)> {
 };
 
 template <typename Functor, typename... Args>
-TaskCallback<MakeUnboundRunType<Functor, Args...>> BindImpl(Functor&& functor, Args&&... args) {
+Callback<MakeUnboundRunType<Functor, Args...>> BindImpl(Functor&& functor, Args&&... args) {
   using BindState = MakeBindStateType<Functor, Args...>;
   using UnboundRunType = MakeUnboundRunType<Functor, Args...>;
   using Invoker = Invoker<BindState, UnboundRunType>;
-  using CallbackType = TaskCallback<UnboundRunType>;
+  using CallbackType = Callback<UnboundRunType>;
 
   using PolymorphicInvoke = typename CallbackType::PolymorphicInvoke;
   PolymorphicInvoke invoke_func = Invoker::Run;
@@ -198,12 +198,12 @@ TaskCallback<MakeUnboundRunType<Functor, Args...>> BindImpl(Functor&& functor, A
 }
 
 template <typename Functor, typename... Args>
-TaskCallback<MakeUnboundRunType<Functor, Args...>> Bind(Functor&& functor, Args&&... args) {
+Callback<MakeUnboundRunType<Functor, Args...>> Bind(Functor&& functor, Args&&... args) {
   return BindImpl(std::forward<Functor>(functor), std::forward<Args>(args)...);
 }
 
 template <typename Signature>
-TaskCallback<Signature> BindRepeating(TaskCallback<Signature> closure) {
+Callback<Signature> BindRepeating(Callback<Signature> closure) {
   return closure;
 }
 

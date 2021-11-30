@@ -19,9 +19,9 @@
 #include "callback/traits_utils.h"
 
 namespace runner {
-  
+
 template <typename R, typename... Args>
-class TaskCallback;
+class Callback;
 
 // FunctorTraits<>
 template <typename Functor, typename SFINAE = void>
@@ -90,9 +90,9 @@ struct FunctorTraits<Functor,
   }
 };
 
-// For TaskCallback.
+// For Callback.
 template <typename R, typename... Args>
-struct FunctorTraits<TaskCallback<R(Args...)>> {
+struct FunctorTraits<Callback<R(Args...)>> {
   using return_type = R;
   using RunType = R(Args...);
   static constexpr bool is_method = false;

@@ -13,7 +13,7 @@
 #include <utility>
 
 namespace runner {
-  
+
 template <typename T>
 using PassingType = typename std::conditional<std::is_scalar<T>::value, T, T&&>::type;
 

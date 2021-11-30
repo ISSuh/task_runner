@@ -4,6 +4,8 @@
  *
  */
 
+#include <utility>
+
 #include "task/conqurrent_task_runner.h"
 #include "base/logging.h"
 
@@ -21,7 +23,7 @@ ConcurrentTaskRunner::ConcurrentTaskRunner(const std::string& label, size_t num)
 
 ConcurrentTaskRunner::~ConcurrentTaskRunner() = default;
 
-void ConcurrentTaskRunner::PostDelayTask(std::function<void()> task_callback, TimeTick delay) {
+void ConcurrentTaskRunner::PostDelayTask(TaskCallback task_callback, TimeTick delay) {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
   {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -83,7 +85,7 @@ void ConcurrentTaskRunner::OnDidFinishTask() {
 Task ConcurrentTaskRunner::NextTask() {
   LOG(LogLevel::TRACE) << "[" << label() << "] " << __func__;
   std::lock_guard<std::mutex> lock(mutex_);
-  
+
   if (queue_.empty()) {
     return Task();
   }

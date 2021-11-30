@@ -33,7 +33,6 @@ void TestFunc() {
   } else {
     manager.StopAllRunner();
   }
-  
   m.unlock();
 }
 
@@ -51,10 +50,12 @@ class TestClass {
 };
 
 int main() {
-  std::cout << "Hello World!\n";
+  std::cout << "Example Sequence Task Runner!\n";
 
-  // auto test1 = runner::Bind(&CallbackTest, 1);
-  // test1.Run();
+  // runner::TaskRunner* test_runner = manager.CreateTaskRunner("test", runner::TaskRunner::Type::SEQUENCE);
+
+  auto test1 = runner::Bind(&CallbackTest, 1);
+  test1.Run();
 
   TestClass testclass;
   auto test2 = runner::Bind(&TestClass::Print, testclass.pointer, 1);
@@ -66,8 +67,7 @@ int main() {
   }, 1);
 
   std::cout << "test3.Run() : " << test3.Run() << std::endl;
-  
-  // runner::TaskRunner* test_runner = manager.CreateTaskRunner("test", runner::TaskRunner::Type::CONCURRENT, 5);
+
   // test_runner->PostTask(TestFunc);
 
   // manager.WaitForTerminateAllTaskRunner();

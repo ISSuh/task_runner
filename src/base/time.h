@@ -8,6 +8,7 @@
 #define BASE_TIME_H_
 
 #include <stddef.h>
+#include <string>
 
 namespace runner {
 
@@ -25,11 +26,11 @@ class TimeTick {
  public:
   static const int64_t kNanosecondsPerMicrosecond = 1000;
   static const int64_t kMicrosecondsPerMillisecond = 1000;
-  
+
   TimeTick();
   explicit TimeTick(int64_t us);
   ~TimeTick();
-  
+
   static TimeTick FromMilliseconds(int64_t ms) {
     return From(ms, kMicrosecondsPerMillisecond);
   }
@@ -80,7 +81,7 @@ class TimeTick {
     return tick_ >= other.tick_;
   }
 
- private:  
+ private:
   static TimeTick From(int64_t value, int64_t offset) {
     return TimeTick(value * offset);
   }

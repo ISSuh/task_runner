@@ -11,8 +11,9 @@
 #include <vector>
 #include <map>
 
-#include "base/time.h"
 #include "task_manager.h"
+#include "callback/callback.h"
+#include "base/time.h"
 
 namespace runner {
 
@@ -24,10 +25,10 @@ class TaskDispatcher {
   ~TaskDispatcher();
 
   void PostTask(const std::string& task_runner_label,
-                std::function<void()> task_callback);
+                TaskCallback task_callback);
 
   void PostDelayTask(const std::string& task_runner_label,
-                std::function<void()> task_callback, TimeTick delay);
+                TaskCallback task_callback, TimeTick delay);
 
  private:
   TaskManager* manager_;

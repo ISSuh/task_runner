@@ -13,6 +13,7 @@
 
 #include "task/task_executor_delegate.h"
 #include "base/time.h"
+#include "callback/callback.h"
 
 namespace runner {
 
@@ -23,8 +24,8 @@ class TaskRunner {
     CONCURRENT
   };
 
-  virtual void PostTask(std::function<void()> task);
-  virtual void PostDelayTask(std::function<void()> task, TimeTick delay) = 0;
+  virtual void PostTask(TaskCallback callback);
+  virtual void PostDelayTask(TaskCallback callback, TimeTick delay) = 0;
 
  protected:
   TaskRunner();
